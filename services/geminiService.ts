@@ -9,27 +9,20 @@ Maktab haqida faktlar:
 - Shiori: "Bilim - kelajak poydevori".
 - Fanlar: Matematika, Fizika, Ona tili, Ingliz tili, Tarix va boshqalar.
 - To'garaklar: Shaxmat, Futbol, Rasm chizish, Robototexnika.
-- Manzil: Toshkent shahri, Yunusobod tumani (shartli).
 - Ish vaqti: 08:00 dan 17:00 gacha.
-
-Faqat maktabga oid savollarga javob bering. Odob bilan gapiring.
 `;
 
-// Helper function to safely get API Key
 const getApiKey = () => {
-  try {
-    return process.env.API_KEY || '';
-  } catch (e) {
-    console.warn("API Key topilmadi yoki muhit xatosi.");
-    return '';
-  }
+  // Use globalThis to safely check for process.env in browser environments
+  const env = (globalThis as any).process?.env || {};
+  return env.API_KEY || '';
 };
 
 export async function getChatResponse(prompt: string, history: { role: 'user' | 'model', text: string }[]) {
   const apiKey = getApiKey();
   
   if (!apiKey) {
-    return "Uzr, tizim sozlamalarida xatolik (API Key yetishmayapti). Iltimos, keyinroq urinib ko'ring.";
+    return "Tizimda API kalit sozlanmagan. Iltimos, keyinroq urinib ko'ring.";
   }
 
   try {
@@ -46,9 +39,9 @@ export async function getChatResponse(prompt: string, history: { role: 'user' | 
       },
     });
 
-    return response.text || "Uzr, hozircha javob bera olmayman.";
+    return response.text || "Javob olishda muammo yuz berdi.";
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Texnik nosozlik yuz berdi yoki so'rov rad etildi. Iltimos, birozdan so'ng urinib ko'ring.";
+    return "Xatolik yuz berdi. Aloqa uzilgan bo'lishi mumkin.";
   }
 }
