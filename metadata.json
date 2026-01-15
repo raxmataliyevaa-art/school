@@ -1,0 +1,8 @@
+{
+  "name": "35-Maktab Rasmiy Veb-sayti",
+  "description": "35-sonli umumta'lim maktabining zamonaviy va interaktiv rasmiy veb-sayti, AI yordamchisi bilan jihozlangan.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
