@@ -1,5 +1,5 @@
 
-import { Teacher, NewsItem, ScheduleEntry, Grade, Task } from './types';
+import { Teacher, NewsItem, ScheduleEntry, Grade, Task, AttendanceRecord } from './types';
 
 export const SCHOOL_NAME = "35-sonli umumta'lim maktabi";
 export const SCHOOL_MOTTO = "Bilim - kelajak poydevori";
@@ -92,4 +92,13 @@ export const STUDENT_TASKS: Task[] = [
   { id: 1, subject: "Matematika", title: "Logarifmlar mavzusidagi 12-25 misollar", deadline: "2024-05-20", status: "pending" },
   { id: 2, subject: "Ingliz tili", title: "Present Perfect vs Past Simple essay", deadline: "2024-05-22", status: "pending" },
   { id: 3, subject: "Ona tili", title: "Insho: 'Mening kelajagim'", deadline: "2024-05-18", status: "completed" }
+];
+
+export const STUDENT_ATTENDANCE: AttendanceRecord[] = [
+  { subject: "Matematika", totalLessons: 32, attended: 30, missed: 2, lastMissedDate: "2024-05-10" },
+  { subject: "Ingliz tili", totalLessons: 24, attended: 24, missed: 0 },
+  { subject: "Ona tili", totalLessons: 28, attended: 27, missed: 1, lastMissedDate: "2024-04-25" },
+  { subject: "Fizika", totalLessons: 20, attended: 20, missed: 0 },
+  { subject: "Tarix", totalLessons: 16, attended: 15, missed: 1, lastMissedDate: "2024-05-02" },
+  { subject: "Kimyo", totalLessons: 18, attended: 18, missed: 0 }
 ];

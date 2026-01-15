@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { STUDENT_SCHEDULE, STUDENT_GRADES, STUDENT_TASKS } from '../constants';
+import { STUDENT_SCHEDULE, STUDENT_GRADES, STUDENT_TASKS, STUDENT_ATTENDANCE } from '../constants';
 
 const StudentPortal: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'grades' | 'tasks'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'grades' | 'tasks' | 'attendance'>('dashboard');
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -14,9 +14,12 @@ const StudentPortal: React.FC = () => {
           <p className="text-xs text-blue-200 mt-2">O'tgan haftaga nisbatan +0.2</p>
         </div>
         <div className="bg-green-600 p-6 rounded-2xl text-white shadow-lg">
-          <p className="text-green-100 text-sm font-medium">Davomat</p>
-          <h4 className="text-4xl font-bold mt-1">98%</h4>
-          <p className="text-xs text-green-200 mt-2">Bu oyda 1 ta dars qoldirilgan</p>
+          <p className="text-green-100 text-sm font-medium">Umumiy davomat</p>
+          <h4 className="text-4xl font-bold mt-1">
+            {Math.round((STUDENT_ATTENDANCE.reduce((acc, curr) => acc + curr.attended, 0) / 
+             STUDENT_ATTENDANCE.reduce((acc, curr) => acc + curr.totalLessons, 0)) * 100)}%
+          </h4>
+          <p className="text-xs text-green-200 mt-2">Jami darslar: {STUDENT_ATTENDANCE.reduce((acc, curr) => acc + curr.totalLessons, 0)} ta</p>
         </div>
         <div className="bg-orange-600 p-6 rounded-2xl text-white shadow-lg">
           <p className="text-orange-100 text-sm font-medium">Kutilayotgan vazifalar</p>
@@ -89,7 +92,7 @@ const StudentPortal: React.FC = () => {
           <h5 className="font-bold text-xl text-blue-600 mb-4">{day.day}</h5>
           <div className="space-y-4">
             {day.lessons.map((lesson, i) => (
-              <div key={i} className="flex items-center p-4 border-l-4 border-blue-500 bg-blue-50/30 rounded-r-xl">
+              <div key={i} className="flex items-center p-4 border-l-4 border-blue-50 bg-blue-50/30 rounded-r-xl">
                 <span className="text-sm font-bold text-blue-600 w-16">{lesson.time}</span>
                 <div className="flex-1">
                   <p className="font-bold text-gray-800">{lesson.subject}</p>
@@ -170,6 +173,55 @@ const StudentPortal: React.FC = () => {
     </div>
   );
 
+  const renderAttendance = () => (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+        <h5 className="font-bold text-lg text-gray-800">Fanlar kesimida davomat</h5>
+        <p className="text-sm text-gray-500">Har bir fan bo'yicha darslarda qatnashish ko'rsatkichi</p>
+      </div>
+      <table className="w-full text-left border-collapse">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="p-4 font-bold text-xs text-gray-500 uppercase tracking-wider">Fan nomi</th>
+            <th className="p-4 font-bold text-xs text-gray-500 uppercase tracking-wider">Jami darslar</th>
+            <th className="p-4 font-bold text-xs text-gray-500 uppercase tracking-wider">Qatnashgan</th>
+            <th className="p-4 font-bold text-xs text-gray-500 uppercase tracking-wider">Qoldirilgan</th>
+            <th className="p-4 font-bold text-xs text-gray-500 uppercase tracking-wider">Foiz</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {STUDENT_ATTENDANCE.map((record, i) => {
+            const percentage = Math.round((record.attended / record.totalLessons) * 100);
+            return (
+              <tr key={i} className="hover:bg-gray-50 transition-colors">
+                <td className="p-4">
+                  <p className="font-bold text-gray-800">{record.subject}</p>
+                  {record.lastMissedDate && (
+                    <p className="text-[10px] text-red-400">Oxirgi qoldirilgan: {record.lastMissedDate}</p>
+                  )}
+                </td>
+                <td className="p-4 text-sm text-gray-600">{record.totalLessons}</td>
+                <td className="p-4 text-sm font-medium text-green-600">{record.attended}</td>
+                <td className="p-4 text-sm font-medium text-red-500">{record.missed}</td>
+                <td className="p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden min-w-[100px]">
+                      <div 
+                        className={`h-full rounded-full ${percentage >= 90 ? 'bg-green-500' : percentage >= 70 ? 'bg-blue-500' : 'bg-orange-500'}`}
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-bold text-gray-700">{percentage}%</span>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
@@ -177,31 +229,22 @@ const StudentPortal: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900">Xush kelibsiz, Azizbek!</h2>
           <p className="text-gray-500">Bugun 16-may, payshanba. O'qishlaringizga muvaffaqiyat!</p>
         </div>
-        <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100 overflow-x-auto whitespace-nowrap">
-          <button 
-            onClick={() => setActiveTab('dashboard')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-blue-600'}`}
-          >
-            Boshqaruv paneli
-          </button>
-          <button 
-            onClick={() => setActiveTab('schedule')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'schedule' ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-blue-600'}`}
-          >
-            Dars jadvali
-          </button>
-          <button 
-            onClick={() => setActiveTab('grades')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'grades' ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-blue-600'}`}
-          >
-            Baholar
-          </button>
-          <button 
-            onClick={() => setActiveTab('tasks')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'tasks' ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-blue-600'}`}
-          >
-            Vazifalar
-          </button>
+        <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100 overflow-x-auto whitespace-nowrap scrollbar-hide">
+          {[
+            { id: 'dashboard', label: 'Boshqaruv paneli' },
+            { id: 'schedule', label: 'Dars jadvali' },
+            { id: 'grades', label: 'Baholar' },
+            { id: 'tasks', label: 'Vazifalar' },
+            { id: 'attendance', label: 'Davomat' }
+          ].map((tab) => (
+            <button 
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-blue-600'}`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -210,6 +253,7 @@ const StudentPortal: React.FC = () => {
         {activeTab === 'schedule' && renderSchedule()}
         {activeTab === 'grades' && renderGrades()}
         {activeTab === 'tasks' && renderTasks()}
+        {activeTab === 'attendance' && renderAttendance()}
       </div>
     </div>
   );

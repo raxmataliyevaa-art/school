@@ -44,3 +44,11 @@ export interface Task {
   deadline: string;
   status: 'pending' | 'completed';
 }
+
+export interface AttendanceRecord {
+  subject: string;
+  totalLessons: number;
+  attended: number;
+  missed: number;
+  lastMissedDate?: string;
+}

@@ -15,9 +15,25 @@ Maktab haqida faktlar:
 Faqat maktabga oid savollarga javob bering. Odob bilan gapiring.
 `;
 
-export async function getChatResponse(prompt: string, history: { role: 'user' | 'model', text: string }[]) {
+// Helper function to safely get API Key
+const getApiKey = () => {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    return process.env.API_KEY || '';
+  } catch (e) {
+    console.warn("API Key topilmadi yoki muhit xatosi.");
+    return '';
+  }
+};
+
+export async function getChatResponse(prompt: string, history: { role: 'user' | 'model', text: string }[]) {
+  const apiKey = getApiKey();
+  
+  if (!apiKey) {
+    return "Uzr, tizim sozlamalarida xatolik (API Key yetishmayapti). Iltimos, keyinroq urinib ko'ring.";
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: [
@@ -33,6 +49,6 @@ export async function getChatResponse(prompt: string, history: { role: 'user' | 
     return response.text || "Uzr, hozircha javob bera olmayman.";
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Texnik nosozlik yuz berdi. Iltimos, keyinroq urinib ko'ring.";
+    return "Texnik nosozlik yuz berdi yoki so'rov rad etildi. Iltimos, birozdan so'ng urinib ko'ring.";
   }
 }

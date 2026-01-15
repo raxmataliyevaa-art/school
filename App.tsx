@@ -1,11 +1,36 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SCHOOL_NAME, SCHOOL_MOTTO, TEACHERS, NEWS } from './constants';
 import AIChat from './components/AIChat';
 import StudentPortal from './components/StudentPortal';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'landing' | 'portal'>('landing');
+  const [hasError, setHasError] = useState(false);
+
+  // Error boundary logic (simple)
+  useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error("App Crash:", error.message);
+      // setHasError(true); // Can be enabled if needed
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center p-8 bg-white rounded-2xl shadow-xl">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Xatolik yuz berdi</h1>
+          <p className="text-gray-600 mb-6">Sahifani yuklashda muammo paydo bo'ldi.</p>
+          <button onClick={() => window.location.reload()} className="bg-blue-600 text-white px-6 py-2 rounded-full">
+            Sahifani yangilash
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const renderLanding = () => (
     <>
@@ -272,13 +297,6 @@ const App: React.FC = () => {
                   Chiqish
                 </button>
               )}
-              <div className="md:hidden">
-                 <button className="text-gray-600">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                    </svg>
-                 </button>
-              </div>
             </div>
           </div>
         </div>
@@ -299,27 +317,15 @@ const App: React.FC = () => {
                 Biz o'quvchilarning faqat bilimini emas, balki shaxsiyatini ham shakllantiramiz. 
                 Bilim olish - bu sarguzasht!
               </p>
-              <div className="flex space-x-4">
-                <button className="bg-white/10 p-2 rounded-full hover:bg-blue-600 transition-colors"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.675 0h-21.35C.597 0 0 .597 0 1.326v21.348C0 23.403.597 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.325-.597 1.325-1.326V1.326C24 .597 23.403 0 22.675 0z"/></svg></button>
-                <button className="bg-white/10 p-2 rounded-full hover:bg-blue-400 transition-colors"><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg></button>
-              </div>
             </div>
             <div className="w-full md:w-2/12 mb-8 md:mb-0">
-              <h5 className="font-bold mb-4 uppercase text-sm tracking-widest">Sahifalar</h5>
+              <h5 className="font-bold mb-4 uppercase text-sm tracking-widest text-blue-400">Sahifalar</h5>
               <ul className="text-gray-400 text-sm space-y-2">
                 <li><button onClick={() => setView('landing')} className="hover:text-blue-500">Asosiy</button></li>
                 <li><button onClick={() => setView('portal')} className="hover:text-blue-500">O'quvchi portali</button></li>
                 <li><a href="#biz-haqimizda" className="hover:text-blue-500">Maktab haqida</a></li>
                 <li><a href="#yangiliklar" className="hover:text-blue-500">Yangiliklar</a></li>
               </ul>
-            </div>
-            <div className="w-full md:w-3/12">
-              <h5 className="font-bold mb-4 uppercase text-sm tracking-widest">Qidiruv</h5>
-              <p className="text-gray-400 text-xs mb-4">Maktab saytidan qidirish.</p>
-              <div className="flex">
-                <input type="text" className="bg-white/5 border border-white/10 rounded-l-lg px-4 py-2 text-xs flex-1 focus:outline-none focus:ring-1 focus:ring-blue-600" placeholder="Qidiruv..." />
-                <button className="bg-blue-600 px-4 py-2 rounded-r-lg text-xs font-bold hover:bg-blue-700 transition-colors">OK</button>
-              </div>
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-500 text-xs">

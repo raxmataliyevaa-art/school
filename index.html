@@ -11,6 +11,15 @@
       body {
         font-family: 'Inter', sans-serif;
         scroll-behavior: smooth;
+        background-color: #f9fafb;
+      }
+      /* Custom scrollbar for better UI */
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
       }
     </style>
   <script type="importmap">
@@ -26,5 +35,6 @@
 </head>
   <body>
     <div id="root"></div>
+    <!-- The platform typically injects index.tsx as a module here automatically -->
   </body>
 </html>
