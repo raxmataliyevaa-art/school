@@ -8,8 +8,7 @@ import AdminPanel from './components/AdminPanel';
 import PortalAuth from './components/PortalAuth';
 
 const App: React.FC = () => {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const [view, setView] = useState<'landing' | 'portal'>('landing');
+  const [view, setView] = useState<'landing' | 'portal' | 'login' | 'admin'>('landing');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(
     localStorage.getItem('isAdmin') === 'true'
   );
@@ -18,17 +17,27 @@ const App: React.FC = () => {
   );
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
+  // Hash routing handler (404 xatosini oldini olish uchun)
   useEffect(() => {
-    const handleLocationChange = () => {
-      setCurrentPath(window.location.pathname);
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash === '#/login') setView('login');
+      else if (hash === '#/admin') {
+        if (isAdminAuthenticated) setView('admin');
+        else window.location.hash = '#/login';
+      }
+      else if (hash === '#/portal') setView('portal');
+      else setView('landing');
     };
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
-  }, []);
 
-  const navigate = (path: string) => {
-    window.history.pushState({}, '', path);
-    setCurrentPath(path);
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Sahifa yuklanganda birinchi tekshiruv
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [isAdminAuthenticated]);
+
+  const navigateTo = (hash: string) => {
+    window.location.hash = hash;
   };
 
   const handleStudentAuth = (name: string) => {
@@ -39,35 +48,35 @@ const App: React.FC = () => {
   const confirmLogout = () => {
     setStudentName(null);
     localStorage.removeItem('studentName');
-    setView('landing');
+    navigateTo('#/');
     setShowLogoutConfirm(false);
   };
 
-  // Auth check for admin
-  if (currentPath === '/admin' && !isAdminAuthenticated) {
-    navigate('/login');
-    return null;
+  const handleAdminLogin = () => {
+    setIsAdminAuthenticated(true);
+    localStorage.setItem('isAdmin', 'true');
+    navigateTo('#/admin');
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminAuthenticated(false);
+    localStorage.removeItem('isAdmin');
+    navigateTo('#/');
+  };
+
+  // Render Logic
+  if (view === 'login') {
+    return <Login onLoginSuccess={handleAdminLogin} onBack={() => navigateTo('#/')} />;
   }
 
-  if (currentPath === '/login') {
-    return <Login onLoginSuccess={() => {
-      setIsAdminAuthenticated(true);
-      navigate('/admin');
-    }} onBack={() => navigate('/')} />;
-  }
-
-  if (currentPath === '/admin') {
-    return <AdminPanel onLogout={() => {
-      setIsAdminAuthenticated(false);
-      localStorage.removeItem('isAdmin');
-      navigate('/');
-    }} />;
+  if (view === 'admin') {
+    return <AdminPanel onLogout={handleAdminLogout} />;
   }
 
   const renderLanding = () => (
     <>
       {/* Hero Section */}
-      <section id="asosiy" className="relative pt-24 pb-40 flex content-center items-center justify-center min-h-[90vh] bg-blue-900">
+      <section id="asosiy" className="relative pt-24 pb-40 flex content-center items-center justify-center min-h-[90vh] bg-blue-900 overflow-hidden">
         <div className="absolute top-0 w-full h-full bg-center bg-cover transition-all duration-1000 transform hover:scale-105" 
              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1523050853061-80e8a4ff147e?q=80&w=2000&auto=format&fit=crop')" }}>
           <span className="w-full h-full absolute opacity-60 bg-gradient-to-b from-black via-slate-900/80 to-transparent"></span>
@@ -86,7 +95,7 @@ const App: React.FC = () => {
                   "{SCHOOL_MOTTO}" — Biz har bir o'quvchining iqtidorini ro'yobga chiqarishga intilamiz.
                 </p>
                 <div className="mt-12 flex flex-col sm:flex-row justify-center gap-6 items-center">
-                  <button onClick={() => setView('portal')} className="group bg-blue-600 text-white px-10 py-5 rounded-full font-black text-lg hover:bg-blue-700 transition-all shadow-2xl hover:shadow-blue-500/50 flex items-center">
+                  <button onClick={() => navigateTo('#/portal')} className="group bg-blue-600 text-white px-10 py-5 rounded-full font-black text-lg hover:bg-blue-700 transition-all shadow-2xl hover:shadow-blue-500/50 flex items-center">
                     O'quvchi portaliga kirish
                     <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                   </button>
@@ -166,7 +175,14 @@ const App: React.FC = () => {
 
             <div className="w-full md:w-5/12 px-4 mr-auto ml-auto mt-12 md:mt-0">
               <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-2xl rounded-3xl overflow-hidden group">
-                <img alt="O'quv jarayoni" src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop" className="w-full h-[400px] object-cover align-middle transition-transform duration-700 group-hover:scale-110" />
+                <img 
+                  alt="O'quv jarayoni" 
+                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop" 
+                  className="w-full h-[400px] object-cover align-middle transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1200&auto=format&fit=crop";
+                  }}
+                />
                 <blockquote className="relative p-10 mb-4 bg-white">
                   <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 583 95" className="absolute left-0 w-full block h-[95px] -top-[94px]">
                     <polygon points="-30,95 583,95 583,65" className="text-white fill-current"></polygon>
@@ -346,29 +362,29 @@ const App: React.FC = () => {
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
-            <div className="flex items-center cursor-pointer group" onClick={() => setView('landing')}>
+            <div className="flex items-center cursor-pointer group" onClick={() => navigateTo('#/')}>
               <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-2xl mr-4 shadow-lg group-hover:rotate-6 transition-transform">
                 35
               </div>
               <span className="font-black text-2xl tracking-tighter text-blue-900 hidden sm:block">35-Maktab</span>
             </div>
             <div className="hidden md:flex space-x-10">
-              <button onClick={() => setView('landing')} className={`${view === 'landing' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'} px-4 py-2 rounded-xl hover:text-blue-600 font-black transition-all`}>Asosiy</button>
+              <button onClick={() => navigateTo('#/')} className={`${view === 'landing' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'} px-4 py-2 rounded-xl hover:text-blue-600 font-black transition-all`}>Asosiy</button>
               <a href="#biz-haqimizda" className="text-gray-600 hover:text-blue-600 font-black transition-colors py-2">Maktab haqida</a>
               <a href="#yangiliklar" className="text-gray-600 hover:text-blue-600 font-black transition-colors py-2">Yangiliklar</a>
-              <button onClick={() => setView('portal')} className={`${view === 'portal' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'} px-4 py-2 rounded-xl hover:text-blue-600 font-black transition-all`}>Portal</button>
+              <button onClick={() => navigateTo('#/portal')} className={`${view === 'portal' ? 'text-blue-600 bg-blue-50' : 'text-gray-600'} px-4 py-2 rounded-xl hover:text-blue-600 font-black transition-all`}>Portal</button>
             </div>
             <div className="flex items-center space-x-4">
               {view === 'landing' ? (
                 <button 
-                  onClick={() => setView('portal')}
+                  onClick={() => navigateTo('#/portal')}
                   className="hidden sm:flex bg-blue-600 text-white px-8 py-3 rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20"
                 >
                   Portalga kirish
                 </button>
               ) : (
                 <button 
-                  onClick={() => studentName ? setShowLogoutConfirm(true) : setView('landing')}
+                  onClick={() => studentName ? setShowLogoutConfirm(true) : navigateTo('#/')}
                   className="bg-gray-100 text-gray-900 px-6 py-3 rounded-2xl font-black text-sm hover:bg-gray-200 transition-all"
                 >
                   {studentName ? 'Tizimdan chiqish' : 'Orqaga'}
@@ -379,20 +395,23 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {view === 'landing' ? (
-        renderLanding()
-      ) : studentName ? (
-        <StudentPortal name={studentName} />
-      ) : (
-        <PortalAuth onAuthSuccess={handleStudentAuth} onBack={() => setView('landing')} />
-      )}
+      <div className="min-h-[calc(100vh-80px)]">
+        {view === 'landing' && renderLanding()}
+        {view === 'portal' && (
+          studentName ? (
+            <StudentPortal name={studentName} />
+          ) : (
+            <PortalAuth onAuthSuccess={handleStudentAuth} onBack={() => navigateTo('#/')} />
+          )
+        )}
+      </div>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-20 border-t border-gray-800">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap justify-between">
             <div className="w-full md:w-5/12 mb-12 md:mb-0">
-              <div className="flex items-center mb-6 cursor-pointer" onClick={() => setView('landing')}>
+              <div className="flex items-center mb-6 cursor-pointer" onClick={() => navigateTo('#/')}>
                 <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black mr-4 shadow-lg">35</div>
                 <span className="text-2xl font-black tracking-tight">{SCHOOL_NAME}</span>
               </div>
@@ -412,8 +431,8 @@ const App: React.FC = () => {
             <div className="w-full md:w-2/12 mb-8 md:mb-0">
               <h5 className="font-black mb-6 uppercase text-sm tracking-widest text-blue-500">Tezkor havolalar</h5>
               <ul className="text-gray-400 text-base space-y-4 font-bold">
-                <li><button onClick={() => setView('landing')} className="hover:text-blue-500 transition-colors">Bosh sahifa</button></li>
-                <li><button onClick={() => setView('portal')} className="hover:text-blue-500 transition-colors">O'quvchi portali</button></li>
+                <li><button onClick={() => navigateTo('#/')} className="hover:text-blue-500 transition-colors">Bosh sahifa</button></li>
+                <li><button onClick={() => navigateTo('#/portal')} className="hover:text-blue-500 transition-colors">O'quvchi portali</button></li>
                 <li><a href="#biz-haqimizda" className="hover:text-blue-500 transition-colors">Maktab haqida</a></li>
                 <li><a href="#yangiliklar" className="hover:text-blue-500 transition-colors">Yangiliklar</a></li>
               </ul>
@@ -422,7 +441,7 @@ const App: React.FC = () => {
               <h5 className="font-black mb-6 uppercase text-sm tracking-widest text-blue-500">Portal</h5>
               <div className="bg-gray-800 p-6 rounded-3xl border border-gray-700">
                 <p className="text-sm text-gray-300 mb-4 font-medium leading-relaxed">Dars jadvali va baholarni ko'rish uchun portalga kiring.</p>
-                <button onClick={() => setView('portal')} className="w-full bg-blue-600 text-white py-3 rounded-2xl font-black text-sm hover:bg-blue-700 transition-all">
+                <button onClick={() => navigateTo('#/portal')} className="w-full bg-blue-600 text-white py-3 rounded-2xl font-black text-sm hover:bg-blue-700 transition-all">
                   Tizimga kirish
                 </button>
               </div>
