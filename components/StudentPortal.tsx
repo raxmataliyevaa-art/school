@@ -2,7 +2,11 @@
 import React, { useState } from 'react';
 import { STUDENT_SCHEDULE, STUDENT_GRADES, STUDENT_TASKS, STUDENT_ATTENDANCE } from '../constants';
 
-const StudentPortal: React.FC = () => {
+interface StudentPortalProps {
+  name: string;
+}
+
+const StudentPortal: React.FC<StudentPortalProps> = ({ name }) => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'schedule' | 'grades' | 'tasks' | 'attendance'>('dashboard');
 
   const renderDashboard = () => (
@@ -226,7 +230,7 @@ const StudentPortal: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Xush kelibsiz, Azizbek!</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Xush kelibsiz, {name}!</h2>
           <p className="text-gray-500">Bugun 16-may, payshanba. O'qishlaringizga muvaffaqiyat!</p>
         </div>
         <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100 overflow-x-auto whitespace-nowrap scrollbar-hide">

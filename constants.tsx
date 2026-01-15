@@ -1,8 +1,13 @@
 
-import { Teacher, NewsItem, ScheduleEntry, Grade, Task, AttendanceRecord } from './types';
+import { Teacher, NewsItem, ScheduleEntry, Grade, Task, AttendanceRecord, Student } from './types';
 
 export const SCHOOL_NAME = "35-sonli umumta'lim maktabi";
 export const SCHOOL_MOTTO = "Bilim - kelajak poydevori";
+
+export const STUDENTS: Student[] = [
+  { id: 1, fullName: "Azizbek Karimov", grade: "9-A", studentId: "ID12345", parentPhone: "+998 90 123 45 67" },
+  { id: 2, fullName: "Malika Sobirova", grade: "11-B", studentId: "ID54321", parentPhone: "+998 93 765 43 21" }
+];
 
 export const TEACHERS: Teacher[] = [
   {

@@ -7,6 +7,14 @@ export interface Teacher {
   experience: string;
 }
 
+export interface Student {
+  id: number;
+  fullName: string;
+  grade: string;
+  studentId: string;
+  parentPhone: string;
+}
+
 export interface NewsItem {
   id: number;
   title: string;
